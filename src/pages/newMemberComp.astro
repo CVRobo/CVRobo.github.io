@@ -1,0 +1,129 @@
+---
+import { Picture } from "astro:assets";
+import "../styles/global.css";
+import "../styles/theme.css";
+import "../styles/newMemberComp.css"
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { carData } from '../lib/carData';
+
+// Only using the five cars that will be used at competition
+const carsInUse = ["12", "15", "99", "92", "2"];
+const selectCars = carData.filter(car => carsInUse.includes(car.carNumber));
+
+// Glob import all images from pastcars folder
+const carImages: Record<string, string> = import.meta.glob('../assets/pastcars/*.{jpg,png}', { eager: true, query: '?url', import: 'default' });
+
+// Map selectCars to use the imported URLs
+const sortedCars = [...selectCars].sort((a, b) => parseInt(b.year) - parseInt(a.year)).map(car => {
+  const fileName = car.photoUrl.split('/').pop(); // e.g., '1988.jpg'
+  const key = `../assets/pastcars/${fileName}`;
+  return {
+    ...car,
+    photoUrl: carImages[key] as string || '/images/placeholder.jpg', // cast as string
+  };
+});
+
+---
+<BaseLayout>
+  <!-- HERO -->
+  <section class="hero" style="--hero-img: url('/images/comp-hero.jpg')">
+    <div class="hero-content">
+      <h1 class="hero-title">New Member Competition</h1>
+      <p class="hero-sub">Experience BAJA SAE</p>
+    </div>
+  </section>
+
+  <!-- DESCRIPTION -->
+  <section class="section about" style="max-width:900px; margin:0 auto 4rem;">
+    <h2>How it Works</h2>
+    <p>
+      New member competition is an opportunity for new members to experience the adrenaline, excitement, and pressure from real BAJA competitions. While learning hands-on skills working on our old cars, friendships and interests spark. New members discover their favorite areas on the car so they can further choose a system and subsystem. All while at the end, they get to race their own team’s car!
+    </p>
+        
+    <div class="comp-block">
+        <h3 class="section-heading" id="subsection">Cars in Use</h3>
+        <section id="car-container" class="cars-in-use-list">
+            {sortedCars.map(car => (
+                <div class="car-block" data-year={car.year}>
+                    <h2 class="num-heading">{car.carNumber}</h2>
+                    <div class="card-wrapper">
+                        <div class="past-car-card">
+                          <Picture 
+                          src={car.photoUrl} 
+                          alt={`Car ${car.carNumber} - ${car.year}`} 
+                          formats={['avif','webp','jpg']} 
+                          width={400} 
+                          height={300} 
+                          />
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </section>
+    </div>
+
+    <div class="comp-block">
+      <p>
+        <a href="mailto:julianna.wehmann@stonybrook.edu" class="btn-secondary">
+          Contact Julianna
+        </a>
+      </p>
+    </div>
+
+    <!-- FAQ SECTION -->
+    <div class="faq-block">
+      <h3 class="section-heading">FAQ</h3>
+        <div class="faq-item">
+            <button class="question">
+                Who can join?
+                <span class="triangle">&#9881;</span>
+            </button>
+            <div class="answer">
+                Active new members who continue to attend GBMs at Engineering 143 and Fabrication Saturdays will be allowed to participate in New Member Competition.<br>
+                Find out more on the <a href="contact">Contact Us</a> page!
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <button class="question">
+                Who can become a driver?
+                <span class="triangle">&#9881;</span>
+            </button>
+            <div class="answer">
+                If you're an active member and have been involved in getting the car ready for competition, you will be eligible to become a driver! Just make sure you have a valid driver's license and officially pass the egress test (safety check to ensure you are able to get out the vehicle safely). 
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <button class="question">
+                How similar is New Member Competition to an actual BAJA SAE one?
+                <span class="triangle">&#9881;</span>
+            </button>
+            <div class="answer">
+                Very similar. But, given our time frame and resources, it is on a much smaller scale.<br>
+                We will hold a tech inspection, brake check, and endurance, with all the same rules on our track. The key difference here is in our end of year competition (BAJA SAE) comes with acceleration, manuverability, and the hill climb.
+            </div>
+        </div>
+    </div>
+  </section>
+
+  <!-- FAQ ANIMATION SCRIPT -->
+    <script type="module">
+    const questions = document.querySelectorAll(".question");
+
+    questions.forEach((question) => {
+        question.addEventListener("click", () => {
+        const currentItem = question.closest(".faq-item");
+        const currentAnswer = currentItem.querySelector(".answer");
+
+        currentItem.classList.toggle("active");
+
+        if (currentItem.classList.contains("active")) {
+            currentAnswer.style.maxHeight = currentAnswer.scrollHeight + "px";
+        } else {
+            currentAnswer.style.maxHeight = null;
+        }
+        });
+    });
+    </script>
+</BaseLayout>
